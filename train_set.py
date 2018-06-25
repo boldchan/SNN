@@ -4,6 +4,7 @@ import math
 
 rangeL = 0.0
 rangeU = 20.0
+f = open('target_data.txt', 'w')
 tar_location = (10.00,12.50)
 for _ in range(50):
 	dist = 0.0
@@ -29,5 +30,10 @@ for _ in range(50):
 			alphaL = -180
 		else:
 			alphaR = 180
-			alphaL = alpha					
+			alphaL = alpha
+
+	print rel_x,rel_y,alphaL,alphaR
+	f.write(str(rel_x) + ',' + str(rel_y) + ',' + str(alphaL) + ',' + str(alphaR) + '\n')
+	
+f.close()							
 
