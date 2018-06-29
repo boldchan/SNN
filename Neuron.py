@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from layers import *
+import pdb
 
 class LIF_Neuron(object):
 
@@ -58,24 +59,24 @@ class Input_Neuron(object):
 						t_rest = t + self.tau_ref
 		return self.vm, self.vm > self.vth 
 
-class Output_Neuron(object):
-	def __init__(self, dim, alpha = 5, beta = 0.05, gamma = 0, t_rest = 0):
+class Output_Neuron(LIF_Neuron):
+	def __init__(self, dim, vth = 30, tau_ref = 3, tau_m = 10, t_rest = 5, gmax = 30, tau_s = 5, alpha = 5, beta = 0.05, gamma = 0):
+		LIF_Neuron.__init__(self, dim, vth, tau_ref, tau_m, t_rest, gmax, tau_s)
 		self.alpha = alpha
 		self.beta = beta
 		self.gamma = gamma
-		self.dim = dim
-		self.t_rest = t_rest
 
-	def forward(self, x, T, dt):
+	def decode(self, x, T, dt, w):
 		time = np.arange(0, T + dt, dt)
-		self.vm = np.zeros((self.dim, len(time)))
+		_, out = self.forward(x, T, dt, w)
+		y_decode = np.zeros((self.dim, len(time)))
 		for n in range(self.dim):
-			for tf in np.where(x[n] > 0)[0]:
+			for tf in np.where(out[n] > 0)[0]:
 				mask = np.zeros(len(time))
 				mask[tf :] = 1
-				self.vm[n] += self.alpha * (T - time[tf]) / T * np.exp(self.beta *(time[tf] - time)) * mask
-			self.vm[n] -= self.gamma
-		return self.vm
+				y_decode[n] += self.alpha * (T - time[tf]) / T * np.exp(self.beta *(time[tf] - time)) * mask
+			y_decode[n] -= self.gamma
+		return y_decode
 
 
 input_dim = 3
@@ -87,31 +88,41 @@ out, out1 = input_neuron.forward(input, 50, 0.125)
 w = np.random.rand(3,2)
 hidden_neuron = LIF_Neuron(hidden_dim)
 out2, out3 = hidden_neuron.forward(out1, 50, 0.125, w)
-output_neuron = Output_Neuron(2)
-out4 = output_neuron.forward(out3, 50, 0.125)
+output_neuron = Output_Neuron(2, gamma = 2)
+w2 = np.random.rand(2,2)
+out4, out5 = output_neuron.forward(out3, 50, 0.125, w2)
+out6 = output_neuron.decode(out3, 50, 0.125, w2)
 # out = synapse(out1, w, 0.125, 50)
-plt.subplot(531)
+plt.subplot(731)
 plt.plot(out1[0])
-plt.subplot(532)
+plt.subplot(732)
 plt.plot(out1[1])
-plt.subplot(533)
+plt.subplot(733)
 plt.plot(out1[2])
-plt.subplot(534)
+plt.subplot(734)
 plt.plot(out[0])
-plt.subplot(535)
+plt.subplot(735)
 plt.plot(out[1])
-plt.subplot(536)
+plt.subplot(736)
 plt.plot(out[2])
-plt.subplot(537)
+plt.subplot(737)
 plt.plot(out2[0])
-plt.subplot(538)
+plt.subplot(738)
 plt.plot(out2[1])
-plt.subplot(5, 3, 10)
+plt.subplot(7, 3, 10)
 plt.plot(out3[0])
-plt.subplot(5, 3, 11)
+plt.subplot(7, 3, 11)
 plt.plot(out3[1])
-plt.subplot(5, 3, 13)
+plt.subplot(7, 3, 13)
 plt.plot(out4[0])
-plt.subplot(5, 3, 14)
+plt.subplot(7, 3, 14)
 plt.plot(out4[1])
+plt.subplot(7, 3, 16)
+plt.plot(out5[0])
+plt.subplot(7, 3, 17)
+plt.plot(out5[1])
+plt.subplot(7, 3, 19)
+plt.plot(out6[0])
+plt.subplot(7, 3, 20)
+plt.plot(out6[1])
 plt.show()

@@ -17,6 +17,10 @@ class Two_Layer_SNN(object):
 
         self.params = {}
 
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+
         W1 = weight_scale * np.random.randn(input_dim, hidden_dim)
         W2 = weight_scale * np.random.randn(hidden_dim, output_dim)
         self.params['W1'] = W1
@@ -24,10 +28,10 @@ class Two_Layer_SNN(object):
 
         self.input_neuron = Input_Neuron(input_dim, t_rest = self.t_rest)
         self.hidden_neuron = LIF_Neuron(hidden_dim, t_rest = self.t_rest)
-        self.output_neuron = Output_Neuron(output_dim)
+        self.output_neuron = Output_Neuron(output_dim, gamma = 2)
 
 
-    def loss(self, x, y = None):
+    def reward(self, x, y = None):
         '''
         compute loss and weight modification
 
@@ -49,15 +53,41 @@ class Two_Layer_SNN(object):
 
         ####################forward#############################
         h = self.hidden_neuron.forward(x, self.T, self.dt)
-        out = self.output_neuron.forward(h, self.T, self.dt)
+        out, y_cap = self.output_neuron.decode(h, self.T, self.dt)
 
         ####################modification########################
+        lr = 1e-2
         time = np.arange(self.dt, self.T + self.dt, self.dt)
-        for t in time:
-            for i in range(self.output_dim):
-                for j in range(self.hidden_dim):
-                    if y is None:
-                        dw = self.STDP()
+        output_layer_reward = np.zeros(self.output_dim)
+        hidden_layer_reward = np.zeros(self.hidden_dim)
+        if y is None:
+            for t in time:
+                for i in range(self.output_dim):
+                    for j in range(self.hidden_dim):
+                            dw = self.STDP()
+        else:
+            for t in time:
+                output_layer_rewards += y - y_cap
+                hidden_layer_reward = self.params['W2'] @ output_layer_rewards
+                g_w2 = 1 - np.exp(-2 * self.params['W2']/ np.max(self.params['W2']))
+                a_pre
+
+        ###tobedone###
+    def updateSTDP():
+        pass
+
+    def deltaW():
+        ##todo##
+        pass
+
+    def updateET():
+        pass
+
+    def simulate():
+        ##todo##
+        pass
+
+
 
 
 
