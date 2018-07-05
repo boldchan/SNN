@@ -69,8 +69,7 @@ class LIF_Neuron(object):
 					self.v[i] = 0
 					self.spike[i] = 1
 					self.refract[i] = self.tau_ref
-			print(self.v[i])
-		return self.spike
+		return self.v, self.spike
 
 
 class hidden_neuron(LIF_Neuron):
@@ -160,30 +159,33 @@ class input_neuron(object):
 if __name__ == '__main__':
 	input_dim = 3
 	hidden_dim = 2
-	input = np.array([0.1, 0.1, 0.1])
+	input = np.array([0.3, 0.7, 0.7])
 
 	input_neuron = input_neuron(input_dim)
 	hidden_neuron = hidden_neuron(hidden_dim)
 	output_neuron = output_neuron(2)
-	w1 = 2 * np.random.rand(3,2) - 1
-	w2 = 2 * np.random.rand(2,2) - 1
+	# w1 = 3 * np.random.rand(3,2) - 1
+	# w2 = np.random.rand(2,2)
 	#not sure if membrane potential can be negative
+
+	w1 = 50 + np.random.rand(3,2)
+	w2 = 70 + np.random.rand(2,2)
 
 	out1T = np.zeros((input_dim, int(p.T/p.dt)))
 	out2T = np.zeros((hidden_dim, int(p.T/p.dt)))
 	out3T = np.zeros((2, int(p.T/p.dt)))
 
-	_, out1T = input_neuron.forward(input)
-	out2T, _ = hidden_neuron.forward(out1T, w1)
-	_, out3T = output_neuron.decode(out2T, w2)
+	# _, out1T = input_neuron.forward(input)
+	# _, out2T = hidden_neuron.forward(out1T, w1)
+	# _, out3T = output_neuron.decode(out2T, w2)
 
-	# for i in range(int(p.T/p.dt)):
-	# 	out1 = input_neuron.forward_t(input, i * p.dt)
-	# 	out1T[:,i] = out1
-	# 	out2 = hidden_neuron.forward_t(i*p.dt, out1, w1)
-	# 	out2T[:,i] = out2
-	# 	out3 = output_neuron.forward_t(i*p.dt, out2, w2)
-	# 	out3T[:,i] = out3
+	for i in range(int(p.T/p.dt)):
+		out1 = input_neuron.forward_t(input, i * p.dt)
+		out1T[:,i] = out1
+		out2s, out2 = hidden_neuron.forward_t(i*p.dt, out1, w1)
+		out2T[:,i] = out2
+		out3s, out3 = output_neuron.forward_t(i*p.dt, out2, w2)
+		out3T[:,i] = out3
 
 
 	plt.subplot(331)
