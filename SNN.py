@@ -16,8 +16,6 @@ class Two_Layer_SNN(object):
         self.dt = dt # simulation time step(ms)
         self.t_rest = t_rest # initial refrectory time
 
-        self.params = {}
-
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
@@ -36,9 +34,17 @@ class Two_Layer_SNN(object):
         W2 = W2.reshape((self.hidden_dim, self.output_dim))
         np.random.shuffle(W2)
         W3 = weight_scale * np.random.randn(input_dim, 1)
-        self.params['W1'] = W1
-        self.params['W2'] = W2
-        self.params['W3'] = W3
+        self.W1 = W1
+        self.W2 = W2
+        self.W3 = W3
+
+        self.g1 = np.zeros_like(W1)
+        self.g2 = np.zeros_like(W2)
+        self.g3 = np.zeros_like(W3)
+
+        self.STDP1 = np.zeros_like(W1)
+        self.STDP2 = np.zeros_like(W2)
+        self.STDP3 = np.zeros_like(W3)
 
         self.eta = p.eta #learning rate, ignore decay for now
 
@@ -110,15 +116,31 @@ class Two_Layer_SNN(object):
                     if(h2[j][t]):
                         apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost[i][j]) * (1 - apost[i][j]/p.yb)
                         STDP[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
-        return STDP1
+
+        self.STDP1 = STDP1
 
 
+###################### Update Weights #########################
+    def updateET(): #Eligibility trace
+        c1 = p.c1
+        c2 = p.c2
+        wmax = p.wmax
+        self.g1 = 1 - c1*self.w1*np.exp((-1*c2/wmax)*abs(self.w1))
+        self.g2 = 1 - c1*self.w2*np.exp((-1*c2/wmax)*abs(self.w3))
+        self.g3 = 1 - c1*self.w3*np.exp((-1*c2/wmax)*abs(self.w3))
+
+    # Function called at the end of each iteration
+    # Caution - reward, STDP, g1 must have same size as W
     def deltaW():
-        ##todo##
-        pass
+        updateET() # Update the eligliblity trace first
+        deltaW1 = self.eta*self.reward1*self.STDP1*self.g1
+        self.W1 = np.clip(self.w1+deltaW1, -p.wmax, p.wmax)
 
-    def updateET():
-        pass
+        deltaW2 = self.eta*self.reward2*self.STDP2*self.g2
+        self.W2 = np.clip(self.w1+deltaW1, -p.wmax, p.wmax)
+
+        deltaW3 = self.eta*self.reward3*self.STDP3*self.g3
+        self.W3 = np.clip(self.w1+deltaW1, -p.wmax, p.wmax)
 
     def simulate():
         ##todo##
