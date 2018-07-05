@@ -46,6 +46,10 @@ class Two_Layer_SNN(object):
         self.STDP2 = np.zeros_like(W2)
         self.STDP3 = np.zeros_like(W3)
 
+        self.reward1 = np.zeros_like(W1)
+        self.reward2 = np.zeros_like(W2)
+        self.reward3 = np.zeros_like(W3)
+
         self.eta = p.eta #learning rate, ignore decay for now
 
 
@@ -131,7 +135,7 @@ class Two_Layer_SNN(object):
 
     # Function called at the end of each iteration
     # Caution - reward, STDP, g1 must have same size as W
-    def deltaW():
+    def calculate_deltaW():
         updateET() # Update the eligliblity trace first
         deltaW1 = self.eta*self.reward1*self.STDP1*self.g1
         self.W1 = np.clip(self.w1+deltaW1, -p.wmax, p.wmax)
@@ -141,6 +145,16 @@ class Two_Layer_SNN(object):
 
         deltaW3 = self.eta*self.reward3*self.STDP3*self.g3
         self.W3 = np.clip(self.w1+deltaW1, -p.wmax, p.wmax)
+
+####################### Update rewards #########################
+
+    def update_rewards(rewardL, rewardR):
+        self.reward2[:,0] = rewardL
+        self.reward2[:,1] = rewardR
+
+        for i in range(self.hidden_dim): #this can be made compact
+            reward = (abs(self.W2[i][0]*rewardL) + abs(self.W2[i][1]*rewardR)) / (self.W2[i][0] + self.W2[i][1])
+            self.reward1[;,i] = reward
 
     def simulate():
         ##todo##
