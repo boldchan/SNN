@@ -11,7 +11,7 @@ class Two_Layer_SNN(object):
     synapse applies first alpha function then affine and its output is the postsynaptic potential (PSP) 
     '''
 
-    def __init__(self, input_dim = 3, hidden_dim, output_dim = 2, T = 50, dt = 0.125, t_rest = 0):
+    def __init__(self, input_dim = 3, hidden_dim = 2, output_dim = 2, T = 50, dt = 0.125, t_rest = 0):
         self.T = T # total time to simulate(ms)
         self.dt = dt # simulation time step(ms)
         self.t_rest = t_rest # initial refrectory time
@@ -80,8 +80,8 @@ class Two_Layer_SNN(object):
         _, y_GA = self.special_neuron.decode(h1, self.T, self.dt)#special neuron
 
         ####################calculate reward########################
-        for i in range(0, self.hidden_dim):
-            self.
+        # for i in range(0, self.hidden_dim):
+        #     self.
 
         lr = 1e-2
         time = np.arange(self.dt, self.T + self.dt, self.dt)
@@ -154,43 +154,21 @@ class Two_Layer_SNN(object):
 
         for i in range(self.hidden_dim): #this can be made compact
             reward = (abs(self.W2[i][0]*rewardL) + abs(self.W2[i][1]*rewardR)) / (self.W2[i][0] + self.W2[i][1])
-            self.reward1[;,i] = reward
+            self.reward1[:,i] = reward
 
     def simulate():
         ##todo##
         pass
 
 
-
-
-
-
-
-
-
-    def STDP(self, dt):
-        A_p = 1
-        A_n = 1
-        tau_p = 15
-        tau_n = 50
-        if dt >= 0:
-            return A_p * exp(-dt / tau_p)
-        else:
-            return -A_n * exp(dt / tau_n)
-
-    def R-STDP(self, sj, si, tau_c):
-        '''
-        Parameters
-        -------
-        si: presynaptic spike times
-        sj: postsynaptic spike times
-        tau_c: time constant of eligibility trace
-
-        Output
-        -------
-        eligibility trace
-        '''
-
+def load_data():
+    data = []
+    with open('target_data.txt', 'r') as f:
+        for line in f:
+            data_str = line[:-1].split(',')
+            data_float = [float(x) for x in data_str]
+            data.append(data_float)
+    return data
 
 
 
