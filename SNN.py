@@ -1,5 +1,6 @@
 import numpy as np
 from Neuron import *
+import parameters as p
 
 class Two_Layer_SNN(object):
     '''
@@ -10,7 +11,7 @@ class Two_Layer_SNN(object):
     synapse applies first alpha function then affine and its output is the postsynaptic potential (PSP) 
     '''
 
-    def __init__(self, input_dim = 3, hidden_dim, output_dim, T = 50, dt = 0.125, t_rest = 0):
+    def __init__(self, input_dim = 3, hidden_dim, output_dim = 2, T = 50, dt = 0.125, t_rest = 0):
         self.T = T # total time to simulate(ms)
         self.dt = dt # simulation time step(ms)
         self.t_rest = t_rest # initial refrectory time
@@ -21,14 +22,25 @@ class Two_Layer_SNN(object):
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim
 
-        W1 = weight_scale * np.random.randn(input_dim, hidden_dim)
-        W2 = weight_scale * np.random.randn(hidden_dim, output_dim)
-        self.params['W1'] = W1
-        self.params['W2'] = W2
-
         self.input_neuron = Input_Neuron(input_dim, t_rest = self.t_rest)
         self.hidden_neuron = LIF_Neuron(hidden_dim, t_rest = self.t_rest)
         self.output_neuron = Output_Neuron(output_dim, gamma = 2)
+        self.special_neuron = Output_Neuron(1)
+
+        W1 = np.array([(18+np.random.randn()*7) for x in range(0,int(self.input_dim*self.hidden_dim*0.8))]
+            +[-3-np.random.randn()*2 for x in range(0,self.input_dim*self.hidden_dim-int(self.input_dim*self.hidden_dim*0.8))])
+        W1 = W1.reshape((self.input_dim, self.hidden_dim))
+        np.random.shuffle(W1)
+        W2 = np.array([(3+np.random.randn()*2) for x in range(0,int(self.output_dim*self.hidden_dim*0.8))]
+            +[-2-(np.random.randn()) for x in range(0,self.output_dim*self.hidden_dim-int(self.hidden_dim*self.output_dim*0.8))])
+        W2 = W2.reshape((self.hidden_dim, self.output_dim))
+        np.random.shuffle(W2)
+        W3 = weight_scale * np.random.randn(input_dim, 1)
+        self.params['W1'] = W1
+        self.params['W2'] = W2
+        self.params['W3'] = W3
+
+        self.eta = p.eta #learning rate, ignore decay for now
 
 
     def reward(self, x, y = None):
@@ -52,10 +64,15 @@ class Two_Layer_SNN(object):
         '''
 
         ####################forward#############################
-        h = self.hidden_neuron.forward(x, self.T, self.dt)
-        out, y_cap = self.output_neuron.decode(h, self.T, self.dt)
+        v1, h1 = self.input_dim.forward(x, self.T, self.dt) #output of input layer
+        v2, h2 = self.hidden_neuron.forward(h1, self.T, self.dt) #output of hidden layer
+        _, y_LR = self.output_neuron.decode(h2, self.T, self.dt) #output of output y_L and y_R
+        _, y_GA = self.special_neuron.decode(h1, self.T, self.dt)#special neuron
 
-        ####################modification########################
+        ####################calculate reward########################
+        for i in range(0, self.hidden_dim):
+            self.
+
         lr = 1e-2
         time = np.arange(self.dt, self.T + self.dt, self.dt)
         output_layer_reward = np.zeros(self.output_dim)
@@ -73,8 +90,28 @@ class Two_Layer_SNN(object):
                 a_pre
 
         ###tobedone###
-    def updateSTDP():
-        pass
+    def updateSTDP1(self, h1, h2):
+        '''
+        h1:former layer output(spike)
+        h2:latter layer output(spike)
+        based on paper two-trace model for spike-Timing-Dependent synaptic plasticity
+        '''
+        apre1 = np.zeros((self.input_dim, self.hidden_dim))
+        apost1 = np.zeros((self.input_dim, self.hidden_dim))
+        STDP1 = np.zeros((self.input_dim, self.hidden_dim))
+        for t in range(int(self.T / self.dt) - 1):
+            for i in self.input_dim:
+                for j in self.output_dim:
+                    apre1[i][j] -= apre1[i][j]/p.taupre * self.dt
+                    apost1[i][j] -=apost1[i][j]/p.taupost * self.dt
+                    if(h1[i][t]):
+                        apre1[i][j] += (p.xb>apre1[i][j])*(1-apre1[i][j]/p.xb)
+                        STDP[i][j] -= p.A_minus/p.yc*apre1[i][j]*apost1[i][j]
+                    if(h2[j][t]):
+                        apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost[i][j]) * (1 - apost[i][j]/p.yb)
+                        STDP[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
+        return STDP1
+
 
     def deltaW():
         ##todo##
