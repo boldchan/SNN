@@ -124,7 +124,7 @@ class Two_Layer_SNN(object):
                     if(h2[j][t]):
                         # apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost1[i][j]) * (1 - apost1[i][j]/p.yb)
                         # STDP1[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
-                        apost1[i][j] -= p.Apost
+                        apost1[i][j] += p.Apost
                         STDP1[i][j] += apre1[i][j]
 
         self.STDP1 = STDP1
@@ -227,15 +227,14 @@ class Two_Layer_SNN(object):
             print(i)
             d = data['input'][i]
             alpha = data['output'][i]
-            for _ in range(2):#single data train three times
-                _, out1 = self.input_neuron.forward(d)
-                _, out2 = self.hidden_neuron.forward(out1, self.W1)
-                _, out3 = self.output_neuron.decode(out2, self.W2)
-                out = self.cal_degree([out3[0][-1], out3[1][-1]])
-                self.update_rewards(out, alpha)
-                self.updateSTDP1(out1, out2)
-                self.updateSTDP2(out2, out3)
-                self.calculate_deltaW()
+            _, out1 = self.input_neuron.forward(d)
+            _, out2 = self.hidden_neuron.forward(out1, self.W1)
+            _, out3 = self.output_neuron.decode(out2, self.W2)
+            out = self.cal_degree([out3[0][-1], out3[1][-1]])
+            self.update_rewards(out, alpha)
+            self.updateSTDP1(out1, out2)
+            self.updateSTDP2(out2, out3)
+            self.calculate_deltaW()
             print(self.W2)
             print(out)
             print(alpha)
