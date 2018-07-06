@@ -6,7 +6,7 @@ rangeL = 0.0
 rangeU = 20.0
 f = open('target_data.txt', 'w')
 tar_location = (10.00,12.50)
-for _ in range(1000):
+for _ in range(500):
 	dist = 0.0
 	while (dist<1.5):
 		i = random.uniform(rangeL,rangeU)
