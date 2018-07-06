@@ -10,6 +10,13 @@ A_plus = 0.86/60
 A_minus = 0.25/60
 tau_plus = 19
 tau_minus = 34
+ymax = 180#?
+
+#parameters for eligibility trace
+wmax = 5 
+c1 = 1 / wmax
+c2 = 1 #?
+
 
 #input layer
 vth_i = 1
@@ -32,6 +39,9 @@ tau_m_o = 10
 t_rest_o = 5
 tau_s_o = 5
 gmax_o = 30
+alpha_o = 100
+beta_o = 0.05
+gamma_o = 0
 
 #simulation
 T = 50

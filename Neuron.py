@@ -77,11 +77,11 @@ class hidden_neuron(LIF_Neuron):
 		LIF_Neuron.__init__(self, dim, p.T, p.dt, vth = p.vth_h, tau_ref = p.tau_ref_h, tau_m = p.tau_m_h, t_rest = p.t_rest_h, gmax = p.gmax_h, tau_s = p.tau_s_h)
 
 class output_neuron(LIF_Neuron):
-	def __init__(self, dim, alpha = 5, beta = 0.05, gamma = 0):
+	def __init__(self, dim):
 		LIF_Neuron.__init__(self, dim, p.T, p.dt, vth = p.vth_o, tau_ref = p.tau_ref_o, tau_m = p.tau_m_o, t_rest = p.t_rest_o, gmax = p.gmax_o, tau_s = p.tau_s_o)
-		self.alpha = alpha
-		self.beta = beta
-		self.gamma = gamma
+		self.alpha = p.alpha_o
+		self.beta = p.beta_o
+		self.gamma = p.gamma_o
 		self.spikeT = np.zeros((dim, int(p.T/p.dt)))
 
 
@@ -114,8 +114,8 @@ class output_neuron(LIF_Neuron):
 	# 	return out, y_decode
 
 class special_neuron(LIF_Neuron):
-	def __init__(self):
-		LIF_Neuron.__init__(self, 1, vth = p.vth_o, tau_ref = p.tau_ref_o, tau_m = p.tau_m_o, t_rest = p.t_rest_o, gmax = p.gmax_o, tau_s = p.tau_s_o)
+	def __init__(self, dim):
+		LIF_Neuron.__init__(self, dim, p.T, p.dt, vth = p.vth_o, tau_ref = p.tau_ref_o, tau_m = p.tau_m_o, t_rest = p.t_rest_o, gmax = p.gmax_o, tau_s = p.tau_s_o)
 
 class input_neuron(object):
 	def __init__(self, input_dim = 3):
@@ -159,33 +159,35 @@ class input_neuron(object):
 if __name__ == '__main__':
 	input_dim = 3
 	hidden_dim = 2
-	input = np.array([0.3, 0.7, 0.7])
+	input = np.array([1, 1, 1])
 
 	input_neuron = input_neuron(input_dim)
 	hidden_neuron = hidden_neuron(hidden_dim)
 	output_neuron = output_neuron(2)
-	# w1 = 3 * np.random.rand(3,2) - 1
-	# w2 = np.random.rand(2,2)
-	#not sure if membrane potential can be negative
 
-	w1 = 50 + np.random.rand(3,2)
-	w2 = 70 + np.random.rand(2,2)
+	if True:
+	    w1 = 3 * np.random.rand(3,2) - 1
+	    w2 = np.random.rand(2,2)
+	    #not sure if membrane potential can be negative
 
-	out1T = np.zeros((input_dim, int(p.T/p.dt)))
-	out2T = np.zeros((hidden_dim, int(p.T/p.dt)))
-	out3T = np.zeros((2, int(p.T/p.dt)))
+	    _, out1T = input_neuron.forward(input)
+	    out2T, _ = hidden_neuron.forward(out1T, w1)
+	    _, out3T = output_neuron.decode(out2T, w2)
+	else:
+		w1 = 50 + np.random.rand(3,2)
+		w2 = 70 + np.random.rand(2,2)
 
-	# _, out1T = input_neuron.forward(input)
-	# _, out2T = hidden_neuron.forward(out1T, w1)
-	# _, out3T = output_neuron.decode(out2T, w2)
+		out1T = np.zeros((input_dim, int(p.T/p.dt)))
+		out2T = np.zeros((hidden_dim, int(p.T/p.dt)))
+		out3T = np.zeros((2, int(p.T/p.dt)))
 
-	for i in range(int(p.T/p.dt)):
-		out1 = input_neuron.forward_t(input, i * p.dt)
-		out1T[:,i] = out1
-		out2s, out2 = hidden_neuron.forward_t(i*p.dt, out1, w1)
-		out2T[:,i] = out2
-		out3s, out3 = output_neuron.forward_t(i*p.dt, out2, w2)
-		out3T[:,i] = out3
+		for i in range(int(p.T/p.dt)):
+			out1 = input_neuron.forward_t(input, i * p.dt)
+			out1T[:,i] = out1
+			out2s, out2 = hidden_neuron.forward_t(i*p.dt, out1, w1)
+			out2T[:,i] = out2
+			out3s, out3 = output_neuron.forward_t(i*p.dt, out2, w2)
+			out3T[:,i] = out3
 
 
 	plt.subplot(331)

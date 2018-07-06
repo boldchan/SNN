@@ -6,7 +6,7 @@ rangeL = 0.0
 rangeU = 20.0
 f = open('target_data.txt', 'w')
 tar_location = (10.00,12.50)
-for _ in range(50):
+for _ in range(1000):
 	dist = 0.0
 	while (dist<1.5):
 		i = random.uniform(rangeL,rangeU)
@@ -32,7 +32,7 @@ for _ in range(50):
 			alphaR = 180
 			alphaL = alpha
 
-	print rel_x,rel_y,alphaL,alphaR
+	print(rel_x,rel_y,alphaL,alphaR)
 	f.write(str(rel_x) + ',' + str(rel_y) + ',' + str(alphaL) + ',' + str(alphaR) + '\n')
 	
 f.close()							
