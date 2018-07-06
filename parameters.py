@@ -1,4 +1,4 @@
-eta = 0.09 #learning rate
+eta = 0.02 #learning rate
 #parameters for rewards
 taupre = taupost = 10
 Apre = 0.1
@@ -13,9 +13,9 @@ tau_minus = 34
 ymax = 180#?
 
 #parameters for eligibility trace
-wmax = 5 
+wmax = 100
 c1 = 1 / wmax
-c2 = 1 #?
+c2 = 1/ wmax #?
 
 
 #input layer
@@ -39,10 +39,10 @@ tau_m_o = 10
 t_rest_o = 5
 tau_s_o = 5
 gmax_o = 30
-alpha_o = 100
+alpha_o = 5
 beta_o = 0.05
 gamma_o = 0
 
 #simulation
 T = 50
-dt = 0.1
+dt = 1

@@ -1,6 +1,8 @@
 import numpy as np
 from Neuron import *
 import parameters as p
+import pdb
+import matplotlib.pyplot as plt
 
 class Two_Layer_SNN(object):
     '''
@@ -11,7 +13,7 @@ class Two_Layer_SNN(object):
     synapse applies first alpha function then affine and its output is the postsynaptic potential (PSP) 
     '''
 
-    def __init__(self, input_dim = 3, hidden_dim = 3, output_dim = 2, T = 50, dt = 0.125, t_rest = 0):
+    def __init__(self, input_dim = 3, hidden_dim = 3, output_dim = 2, T = p.T, dt = p.dt, t_rest = 0):
         self.T = T # total time to simulate(ms)
         self.dt = dt # simulation time step(ms)
         self.t_rest = t_rest # initial refrectory time
@@ -25,14 +27,14 @@ class Two_Layer_SNN(object):
         self.output_neuron = output_neuron(output_dim)
         self.special_neuron = special_neuron(1)
 
-        W1 = np.array([1 + np.random.randn() for x in range(int(self.input_dim*self.hidden_dim*0.8))]
-            +[-(1+np.random.randn()) for x in range(self.input_dim*self.hidden_dim-int(self.input_dim*self.hidden_dim*0.8))])
-        W1 = W1.reshape((self.input_dim, self.hidden_dim))
+        W1 = np.array([2 + 2 * np.random.randn() for x in range(int(self.input_dim*self.hidden_dim*0.8))]
+            +[(-1 - np.random.randn()) for x in range(self.input_dim*self.hidden_dim-int(self.input_dim*self.hidden_dim*0.8))])
         np.random.shuffle(W1)
-        W2 = np.array([1 + np.random.randn() for x in range(0,int(self.output_dim*self.hidden_dim*0.8))]
-            +[-(1 + np.random.randn()) for x in range(self.output_dim*self.hidden_dim-int(self.hidden_dim*self.output_dim*0.8))])
-        W2 = W2.reshape((self.hidden_dim, self.output_dim))
+        W1 = W1.reshape((self.input_dim, self.hidden_dim))
+        W2 = np.array([2 + 2 * np.random.randn() for x in range(int(self.output_dim*self.hidden_dim*0.8))]
+            +[(-1 - np.random.randn()) for x in range(self.output_dim*self.hidden_dim-int(self.hidden_dim*self.output_dim*0.8))])
         np.random.shuffle(W2)
+        W2 = W2.reshape((self.hidden_dim, self.output_dim))
         W3 = np.random.randn(input_dim, 1)
         self.W1 = W1
         self.W2 = W2
@@ -115,11 +117,15 @@ class Two_Layer_SNN(object):
                     apre1[i][j] -= apre1[i][j]/p.taupre * self.dt
                     apost1[i][j] -=apost1[i][j]/p.taupost * self.dt
                     if(h1[i][t]):
-                        apre1[i][j] += (p.xb>apre1[i][j])*(1-apre1[i][j]/p.xb)
-                        STDP1[i][j] -= p.A_minus/p.yc*apre1[i][j]*apost1[i][j]
+                        # apre1[i][j] += (p.xb>apre1[i][j])*(1-apre1[i][j]/p.xb)
+                        # STDP1[i][j] -= p.A_minus/p.yc*apre1[i][j]*apost1[i][j]
+                        apre1[i][j] += p.Apre
+                        STDP1 += apost1[i][j]
                     if(h2[j][t]):
-                        apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost1[i][j]) * (1 - apost1[i][j]/p.yb)
-                        STDP1[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
+                        # apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost1[i][j]) * (1 - apost1[i][j]/p.yb)
+                        # STDP1[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
+                        apost1[i][j] -= p.Apost
+                        STDP1[i][j] += apre1[i][j]
 
         self.STDP1 = STDP1
 
@@ -138,11 +144,15 @@ class Two_Layer_SNN(object):
                     apre1[i][j] -= apre1[i][j]/p.taupre * self.dt
                     apost1[i][j] -=apost1[i][j]/p.taupost * self.dt
                     if(h1[i][t]):
-                        apre1[i][j] += (p.xb>apre1[i][j])*(1-apre1[i][j]/p.xb)
-                        STDP2[i][j] -= p.A_minus/p.yc*apre1[i][j]*apost1[i][j]
+                        # apre1[i][j] += (p.xb>apre1[i][j])*(1-apre1[i][j]/p.xb)
+                        # STDP2[i][j] -= p.A_minus/p.yc*apre1[i][j]*apost1[i][j]
+                        apre1[i][j] += p.Apre
+                        STDP2 += apost1[i][j]
                     if(h2[j][t]):
-                        apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost1[i][j]) * (1 - apost1[i][j]/p.yb)
-                        STDP2[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
+                        # apost1[i][j] += (apre1[i][j] + p.yc)* (p.yb>apost1[i][j]) * (1 - apost1[i][j]/p.yb)
+                        # STDP2[i][j] += p.A_plus*apre1[i][j]*(apost1[i][j] - p.yc)*(apost1[i][j]>p.yc)
+                        apost1[i][j] += p.Apost
+                        STDP2[i][j] += apre1[i][j]
 
         self.STDP2 = STDP2
 
@@ -177,8 +187,29 @@ class Two_Layer_SNN(object):
         '''
         out is the output of snn, expected is the expected value
         '''
-        rewardL = (expected[0] - out[0])/p.ymax#?
-        rewardR = (expected[1] - out[1])/p.ymax#?
+        # turn right
+        # pdb.set_trace()
+        if np.abs(expected[1]) < np.abs(expected[0]):
+            # turn right
+            rewardR = (np.abs(expected[1]) - np.abs(out[1]))/p.ymax
+            rewardL = 0.1
+            # if rewardR > 0:
+            #     rewardL = 0.1
+            # elif np.abs(out[1]) > np.abs(out[0]):
+            #     rewardL = 0.1
+            # else:
+            #     rewardL = -0.1
+        else:
+            # turn left
+            rewardL = (np.abs(expected[0]) - np.abs(out[0]))/p.ymax
+            rewardR = 0.1
+            # if reawrdL > 0:
+            #     rewardR = 0.1
+            # elif np.abs(out[0]) > np.abs(out[1]):
+            #     rewardR = 0.1
+            # else:
+            #     rewardR = -0.1
+
         self.reward2[:,0] = rewardL
         self.reward2[:,1] = rewardR
 
@@ -190,19 +221,33 @@ class Two_Layer_SNN(object):
         ##todo##
         data = load_data()
         num_data = len(data['input'])
+        print(data['input'][0])
+        print(data['output'][0])
         for i in range(num_data):
+            print(i)
             d = data['input'][i]
             alpha = data['output'][i]
-            _, out1 = self.input_neuron.forward(d)
-            _, out2 = self.hidden_neuron.forward(out1, self.W1)
-            _, out3 = self.output_neuron.decode(out2, self.W2)
-            out = [out3[0][-1], out3[1][-1]]
-            self.update_rewards(out, alpha)
-            self.updateSTDP1(out1, out2)
-            self.updateSTDP2(out2, out3)
-            self.calculate_deltaW()
+            for _ in range(2):#single data train three times
+                _, out1 = self.input_neuron.forward(d)
+                _, out2 = self.hidden_neuron.forward(out1, self.W1)
+                _, out3 = self.output_neuron.decode(out2, self.W2)
+                out = self.cal_degree([out3[0][-1], out3[1][-1]])
+                self.update_rewards(out, alpha)
+                self.updateSTDP1(out1, out2)
+                self.updateSTDP2(out2, out3)
+                self.calculate_deltaW()
             print(self.W2)
+            print(out)
+            print(alpha)
             # print(out - alpha)
+
+    def cal_degree(self, out):
+        deg = [0., 0.]
+        act_l = out[0]/5
+        act_r = out[1]/5
+        deg[0] = -180*act_l
+        deg[1] = 180*act_r 
+        return deg
 
     def test(self, input):
         '''
@@ -211,7 +256,7 @@ class Two_Layer_SNN(object):
         _, out1 = self.input_neuron.forward(input)
         _, out2 = self.hidden_neuron.forward(out1, self.W1)
         _, out3 = self.output_neuron.decode(out2, self.W2)
-        print([out3[0][-1], out3[1][-1]])
+        print(self.cal_degree(out3[:,-1]))
 
 
 def load_data():
@@ -221,7 +266,7 @@ def load_data():
         for line in f:
             data_str = line[:-1].split(',')
             data_float = [float(x) for x in data_str]
-            data_float /= np.sqrt(data_float[0]*data_float[0] + data_float[1] * data_float[1])
+            data_float[:2] /= np.sqrt(data_float[0]*data_float[0] + data_float[1] * data_float[1])
             data_rel = [0, 0, 0]
             if data_float[1] > 0:
                 data_rel[0] = data_float[1]
@@ -234,7 +279,8 @@ def load_data():
     return {'input':input_data, 'output':output_data}
 
 if __name__ == '__main__':
-    snn = Two_Layer_SNN()
+    snn = Two_Layer_SNN(hidden_dim = 10)
+    print(snn.W2)
     snn.train()
     snn.test([0.7356, 0, 0])
 
