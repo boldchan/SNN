@@ -1,3 +1,5 @@
+# https://github.com/miloharper/visualise-neural-network
+
 from matplotlib import pyplot
 from math import cos, sin, atan
 
@@ -7,9 +9,9 @@ class Neuron:
         self.x = x
         self.y = y
 
-    def draw(self, neuron_radius):
+    def draw(self, neuron_radius, color='black'):
         circle = pyplot.Circle(
-            (self.x, self.y), radius=neuron_radius, fill=False)
+            (self.x, self.y), radius=neuron_radius, fill=False, color=color)
         pyplot.gca().add_patch(circle)
 
 
@@ -38,10 +40,15 @@ class Layer:
         return self.horizontal_distance_between_neurons * (self.number_of_neurons_in_widest_layer - number_of_neurons) / 2
 
     def __calculate_layer_y_position(self):
+        # if self.previous_layer:
+        #     return self.previous_layer.y + self.vertical_distance_between_layers
+        # else:
+        #     return 0
+
         if self.previous_layer:
-            return self.previous_layer.y + self.vertical_distance_between_layers
+            return self.previous_layer.y - self.vertical_distance_between_layers
         else:
-            return 0
+            return self.number_of_layers * self.vertical_distance_between_layers
 
     def __get_previous_layer(self, network):
         if len(network.layers) > 0:
@@ -53,24 +60,24 @@ class Layer:
         angle = atan((neuron2.x - neuron1.x) / float(neuron2.y - neuron1.y))
         x_adjustment = self.neuron_radius * sin(angle)
         y_adjustment = self.neuron_radius * cos(angle)
-        line = pyplot.Line2D((neuron1.x - x_adjustment, neuron2.x + x_adjustment),
-                             (neuron1.y - y_adjustment, neuron2.y + y_adjustment))
+        line = pyplot.Line2D((neuron1.x + x_adjustment, neuron2.x - x_adjustment),
+                             (neuron1.y + y_adjustment, neuron2.y - y_adjustment))
+
         pyplot.gca().add_line(line)
 
     def draw(self, layerType=0):
-        for neuron in self.neurons:
+        for i, neuron in enumerate(self.neurons):
             neuron.draw(self.neuron_radius)
             if self.previous_layer:
                 for previous_layer_neuron in self.previous_layer.neurons:
                     self.__line_between_two_neurons(
                         neuron, previous_layer_neuron)
-
         x_text = self.number_of_neurons_in_widest_layer * \
             self.horizontal_distance_between_neurons
         if layerType == 0:
-            pyplot.text(x_text, self.y, 'Output Layer', fontsize=12)
-        elif layerType == -1:
             pyplot.text(x_text, self.y, 'Input Layer', fontsize=12)
+        elif layerType == -1:
+            pyplot.text(x_text, self.y, 'Output Layer', fontsize=12)
         else:
             pyplot.text(x_text, self.y, 'Hidden Layer ' +
                         str(layerType), fontsize=12)
@@ -89,6 +96,9 @@ class NetworkDrawer:
                       self.number_of_layers)
         self.layers.append(layer)
 
+    def update_link(layer1, neuron1, layer2, neuron2):
+        pass
+
     def draw(self):
         pyplot.figure()
         for i in range(len(self.layers)):
@@ -104,7 +114,7 @@ class NetworkDrawer:
 
 class DrawNN:
     def __init__(self, neural_network):
-        self.neural_network = neural_network[::-1]
+        self.neural_network = neural_network
 
     def draw(self):
         widest_layer = max(self.neural_network)

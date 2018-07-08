@@ -262,7 +262,7 @@ class Two_Layer_SNN(object):
     def draw(self):
         widest_layer = max(self.layers_dims)
         network = NetworkDrawer(widest_layer, len(self.layers_dims))
-        for l in self.layers_dims[::-1]:
+        for l in self.layers_dims:
             network.add_layer(l)
         network.draw()
 
