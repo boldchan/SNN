@@ -33,7 +33,9 @@ class LIF_Neuron(object):
 			for i in range(x.shape[0]):
 				temp = np.zeros(len(time))
 				for tf in np.where(x[i] > 0)[0]:
-					temp += shift(alpha_t, tf, cval = 0)
+					# temp += shift(alpha_t, tf, cval = 0)
+					shift = np.concatenate((np.zeros(tf),alpha_t[tf:]))
+					temp += shift
 				PSP += w[i, j] * temp
 			t_rest = self.t_rest
 			for i, t in enumerate(time):

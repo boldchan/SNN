@@ -15,13 +15,13 @@ for _ in range(500):
 		rel_y = tar_location[1] - j
 		dist = math.sqrt((rel_x)*(rel_x) + (rel_y)*(rel_y))
 	alphaR = alphaL = 0
-	if rel_x < 0:
+	if rel_x < 0 or (rel_x > 0 and rel_x < abs(rel_y)):
 		if rel_y > 0: 
-			alphaR = 90
+			alphaR = 45
 			alphaL = -180
 		else:
 			alphaR = 180
-			alphaL = -90
+			alphaL = -45
 	else:
 		val = rel_y / dist
 		alpha = math.asin(val)*(180/math.pi)

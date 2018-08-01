@@ -1,4 +1,6 @@
-eta = 0.01 #learning rate
+# eta = 0.005 #learning rate
+eta_max = 0.4 #learning rate
+eta_min = 0.1
 #parameters for rewards
 taupre = taupost = 10
 Apre = 0.1
